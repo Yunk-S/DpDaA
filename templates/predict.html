@@ -1,0 +1,683 @@
+{% extends "base.html" %}
+
+{% block title %}疾病风险预测 - 疾病预测与大数据分析系统{% endblock %}
+
+{% block meta_description %}提供中风、心脏病和肝硬化风险预测，基于个人健康指标评估患病风险并提供预防建议。{% endblock %}
+
+{% block extra_head %}
+<style>
+    .prediction-form {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+    }
+    .prediction-form:hover {
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+    }
+    .result-card {
+        display: none;
+        margin-top: 20px;
+        margin-bottom: 30px;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .result-card.show {
+        transform: scale(1.02);
+    }
+    .high-risk {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+    }
+    .moderate-risk {
+        background-color: #fff3cd;
+        border-color: #ffeeba;
+        color: #856404;
+    }
+    .low-risk {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+    }
+    .form-label {
+        font-weight: 500;
+    }
+    .result-title {
+        font-size: 24px;
+        font-weight: bold;
+    }
+    .result-probability {
+        font-size: 20px;
+        font-weight: bold;
+        margin: 15px 0;
+    }
+    .progress {
+        height: 25px;
+        margin-bottom: 15px;
+        transition: all 1s ease;
+    }
+    .nav-pills .nav-link {
+        transition: all 0.3s ease;
+    }
+    .nav-pills .nav-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .nav-pills .nav-link.active {
+        background-color: #0d6efd;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(13, 110, 253, 0.3);
+    }
+    /* 增强文字可见性的样式 */
+    .hero-text-enhanced {
+        color: #ffffff;
+        text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6);
+        font-weight: 600;
+        background-color: rgba(0, 0, 0, 0.4);
+        padding: 10px 20px;
+        border-radius: 8px;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 fade-in">
+    <h1 class="text-center mb-4 animated-title white-heading">疾病风险预测</h1>
+    <p class="lead text-center hero-text-enhanced">请输入您的健康指标，系统将评估您患特定疾病的风险。</p>
+
+    <!-- 疾病类型选择标签页 -->
+    <ul class="nav nav-pills mb-4 justify-content-center" id="disease-tab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="stroke-tab" data-bs-toggle="pill" data-bs-target="#stroke" type="button" role="tab">
+                <i class="fas fa-brain me-2"></i>中风预测
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="heart-tab" data-bs-toggle="pill" data-bs-target="#heart" type="button" role="tab">
+                <i class="fas fa-heartbeat me-2"></i>心脏病预测
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="cirrhosis-tab" data-bs-toggle="pill" data-bs-target="#cirrhosis" type="button" role="tab">
+                <i class="fas fa-pills me-2"></i>肝硬化预测
+            </button>
+        </li>
+    </ul>
+
+    <!-- 预测结果显示区域 -->
+    <div id="prediction-result" class="result-card fade-in-section">
+        <h2 class="result-title text-center mb-4">预测结果</h2>
+        <div id="result-content"></div>
+    </div>
+
+    <!-- 疾病预测表单 -->
+    <div class="tab-content" id="disease-tabContent">
+        <!-- 中风预测表单 -->
+        <div class="tab-pane fade show active" id="stroke" role="tabpanel">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="prediction-form fade-in-section is-visible">
+                        <h3 class="text-center mb-4">中风风险评估</h3>
+                        <form id="stroke-form" class="prediction-form-element">
+                            <input type="hidden" name="disease_type" value="stroke">
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="age" class="form-label">年龄</label>
+                                    <input type="number" class="form-control" id="age" name="age" min="1" max="120" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="gender" class="form-label">性别</label>
+                                    <select class="form-select" id="gender" name="gender" required>
+                                        <option value="">请选择</option>
+                                        <option value="Male">男</option>
+                                        <option value="Female">女</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="hypertension" class="form-label">高血压</label>
+                                    <select class="form-select" id="hypertension" name="hypertension" required>
+                                        <option value="">请选择</option>
+                                        <option value="0">否</option>
+                                        <option value="1">是</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="heart_disease" class="form-label">心脏病</label>
+                                    <select class="form-select" id="heart_disease" name="heart_disease" required>
+                                        <option value="">请选择</option>
+                                        <option value="0">否</option>
+                                        <option value="1">是</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="avg_glucose_level" class="form-label">平均血糖水平 (mg/dL)</label>
+                                    <input type="number" class="form-control" id="avg_glucose_level" name="avg_glucose_level" min="50" max="300" step="0.1" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="bmi" class="form-label">体重指数 (BMI)</label>
+                                    <input type="number" class="form-control" id="bmi" name="bmi" min="10" max="60" step="0.1" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="smoking_status" class="form-label">吸烟状态</label>
+                                    <select class="form-select" id="smoking_status" name="smoking_status" required>
+                                        <option value="">请选择</option>
+                                        <option value="never smoked">从不吸烟</option>
+                                        <option value="formerly smoked">过去吸烟</option>
+                                        <option value="smokes">吸烟</option>
+                                        <option value="Unknown">未知</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary">预测风险</button>
+                                <button type="reset" class="btn btn-secondary ms-2">重置</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 心脏病预测表单 -->
+        <div class="tab-pane fade" id="heart" role="tabpanel">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="prediction-form fade-in-section">
+                        <h3 class="text-center mb-4">心脏病风险评估</h3>
+                        <form id="heart-form" class="prediction-form-element">
+                            <input type="hidden" name="disease_type" value="heart">
+                            
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="heart-age" class="form-label">年龄</label>
+                                        <input type="number" class="form-control" id="heart-age" name="age" min="1" max="120" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="heart-gender" class="form-label">性别</label>
+                                        <select class="form-select" id="heart-gender" name="gender" required>
+                                            <option value="">请选择</option>
+                                            <option value="Male">男</option>
+                                            <option value="Female">女</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="chest_pain_type" class="form-label">胸痛类型</label>
+                                        <select class="form-select" id="chest_pain_type" name="chest_pain_type" required>
+                                            <option value="">请选择</option>
+                                            <option value="TA">典型心绞痛 (TA)</option>
+                                            <option value="ATA">非典型心绞痛 (ATA)</option>
+                                            <option value="NAP">非心绞痛 (NAP)</option>
+                                            <option value="ASY">无症状 (ASY)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="resting_bp" class="form-label">静息血压 (mmHg)</label>
+                                        <input type="number" class="form-control" id="resting_bp" name="resting_bp" min="80" max="220" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="cholesterol" class="form-label">胆固醇 (mg/dL)</label>
+                                        <input type="number" class="form-control" id="cholesterol" name="cholesterol" min="100" max="600" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="fasting_bs" class="form-label">空腹血糖 > 120 mg/dL</label>
+                                        <select class="form-select" id="fasting_bs" name="fasting_bs" required>
+                                            <option value="">请选择</option>
+                                            <option value="0">否</option>
+                                            <option value="1">是</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="resting_ecg" class="form-label">静息心电图</label>
+                                        <select class="form-select" id="resting_ecg" name="resting_ecg" required>
+                                            <option value="">请选择</option>
+                                            <option value="Normal">正常</option>
+                                            <option value="ST">ST-T波异常</option>
+                                            <option value="LVH">左心室肥大</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="max_hr" class="form-label">最大心率</label>
+                                        <input type="number" class="form-control" id="max_hr" name="max_hr" min="60" max="220" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="exercise_angina" class="form-label">运动诱发心绞痛</label>
+                                        <select class="form-select" id="exercise_angina" name="exercise_angina" required>
+                                            <option value="">请选择</option>
+                                            <option value="N">否</option>
+                                            <option value="Y">是</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="oldpeak" class="form-label">ST压低</label>
+                                        <input type="number" class="form-control" id="oldpeak" name="oldpeak" min="0" max="10" step="0.1" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="st_slope" class="form-label">ST段斜率</label>
+                                        <select class="form-select" id="st_slope" name="st_slope" required>
+                                            <option value="">请选择</option>
+                                            <option value="Up">上升</option>
+                                            <option value="Flat">平坦</option>
+                                            <option value="Down">下降</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-danger">预测风险</button>
+                                    <button type="reset" class="btn btn-secondary ms-2">重置</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 肝硬化预测表单 -->
+            <div class="tab-pane fade" id="cirrhosis" role="tabpanel">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="prediction-form fade-in-section">
+                            <h3 class="text-center mb-4">肝硬化风险评估</h3>
+                            <form id="cirrhosis-form" class="prediction-form-element">
+                                <input type="hidden" name="disease_type" value="cirrhosis">
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="cirrhosis-age" class="form-label">年龄 (天)</label>
+                                        <input type="number" class="form-control" id="cirrhosis-age" name="age" min="1000" max="40000" required>
+                                        <small class="form-text text-muted">请输入天数 (例如: 18250 = 50岁)</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="cirrhosis-gender" class="form-label">性别</label>
+                                        <select class="form-select" id="cirrhosis-gender" name="gender" required>
+                                            <option value="">请选择</option>
+                                            <option value="Male">男 (M)</option>
+                                            <option value="Female">女 (F)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label for="ascites" class="form-label">腹水</label>
+                                        <select class="form-select" id="ascites" name="ascites" required>
+                                            <option value="">请选择</option>
+                                            <option value="N">否 (N)</option>
+                                            <option value="Y">是 (Y)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="hepatomegaly" class="form-label">肝肿大</label>
+                                        <select class="form-select" id="hepatomegaly" name="hepatomegaly" required>
+                                            <option value="">请选择</option>
+                                            <option value="N">否 (N)</option>
+                                            <option value="Y">是 (Y)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="spiders" class="form-label">蜘蛛痣</label>
+                                        <select class="form-select" id="spiders" name="spiders" required>
+                                            <option value="">请选择</option>
+                                            <option value="N">否 (N)</option>
+                                            <option value="Y">是 (Y)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="edema" class="form-label">水肿</label>
+                                        <select class="form-select" id="edema" name="edema" required>
+                                            <option value="">请选择</option>
+                                            <option value="N">无水肿 (N)</option>
+                                            <option value="S">轻度水肿 (S)</option>
+                                            <option value="Y">尽管利尿剂治疗仍有水肿 (Y)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="bilirubin" class="form-label">胆红素 (mg/dL)</label>
+                                        <input type="number" class="form-control" id="bilirubin" name="bilirubin" min="0" max="30" step="0.1" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="albumin" class="form-label">白蛋白 (g/dL)</label>
+                                        <input type="number" class="form-control" id="albumin" name="albumin" min="1" max="6" step="0.01" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="prothrombin" class="form-label">凝血酶原时间 (秒)</label>
+                                        <input type="number" class="form-control" id="prothrombin" name="prothrombin" min="8" max="20" step="0.1" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="copper" class="form-label">尿铜 (μg/天)</label>
+                                        <input type="number" class="form-control" id="copper" name="copper" min="0" max="600" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="drug" class="form-label">药物治疗</label>
+                                        <select class="form-select" id="drug" name="drug" required>
+                                            <option value="">请选择</option>
+                                            <option value="D-penicillamine">D-青霉胺</option>
+                                            <option value="Placebo">安慰剂</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-warning">预测风险</button>
+                                    <button type="reset" class="btn btn-secondary ms-2">重置</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据与概念图展示 -->
+        <div class="row mt-5 content-section">
+            <div class="col-md-6 mb-4">
+                <div class="chart-container">
+                    <h4 class="text-center">风险因素关联分析</h4>
+                    <img src="{{ url_for('static', filename='images/concept_healthcare.jpg') }}" class="img-fluid concept-image" alt="风险因素关联分析">
+                    <p class="mt-3">通过机器学习技术，我们分析了多种风险因素之间的复杂关联，为预测模型提供了更全面的理解。</p>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="chart-container">
+                    <h4 class="text-center">深度学习与预测</h4>
+                    <img src="{{ url_for('static', filename='images/concept_prediction.jpg') }}" class="img-fluid concept-image" alt="深度学习与预测">
+                    <p class="mt-3">我们的深度学习模型通过分析大量健康数据，能够识别出传统方法难以发现的隐藏模式和风险信号。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 底部导航按钮 -->
+    <div class="action-button-container">
+        <a href="/multi-predict" class="action-button">
+            <i class="fas fa-sitemap"></i> 进入多疾病联合预测
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 添加表单处理
+    document.querySelectorAll('.prediction-form-element').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 显示加载状态
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerText;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 预测中...';
+            
+            // 收集表单数据
+            const formData = new FormData(this);
+            
+            // 发送AJAX请求
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('网络响应错误');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // 恢复按钮状态
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
+                
+                // 显示预测结果
+                showPredictionResult(data);
+            })
+            .catch(error => {
+                // 恢复按钮状态
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
+                
+                // 显示错误信息
+                showError(error.message);
+            });
+        });
+    });
+    
+    // 显示错误信息
+    function showError(message) {
+        const resultContainer = document.getElementById('prediction-result');
+        const resultContent = document.getElementById('result-content');
+        
+        // 显示结果容器
+        resultContainer.style.display = 'block';
+        
+        // 清空之前的结果
+        resultContent.innerHTML = `
+            <div class="alert alert-danger">
+                <h4 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> 出错了</h4>
+                <p>很抱歉，预测过程中遇到问题：${message}</p>
+                <p>请检查您的输入数据并重试。</p>
+            </div>
+        `;
+        
+        // 滚动到结果区域
+        resultContainer.scrollIntoView({behavior: 'smooth'});
+    }
+    
+    // 显示预测结果
+    function showPredictionResult(data) {
+        const resultContainer = document.getElementById('prediction-result');
+        const resultContent = document.getElementById('result-content');
+        
+        if (data.error) {
+            showError(data.error);
+            return;
+        }
+        
+        // 清空之前的结果
+        resultContent.innerHTML = '';
+        
+        // 根据疾病类型显示不同结果
+        if (data.disease_type === 'stroke' || data.disease_type === 'heart') {
+            const isPredicted = data.prediction === 1;
+            const probability = data.probability["1"] * 100;
+            const riskLevel = probability < 30 ? 'low' : probability < 70 ? 'moderate' : 'high';
+            
+            let html = `
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card mb-4 ${riskLevel}-risk">
+                            <div class="card-header bg-${isPredicted ? 'danger' : 'success'} text-white">
+                                <h3 class="card-title mb-0">${data.disease_type === 'stroke' ? '中风' : '心脏病'}风险预测结果</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center mb-4">
+                                    <div class="display-4">${probability.toFixed(2)}%</div>
+                                    <h4>患病风险</h4>
+                                </div>
+                                <div class="progress mb-4">
+                                    <div class="progress-bar bg-${isPredicted ? 'danger' : 'success'}" 
+                                        role="progressbar" style="width: ${probability}%" 
+                                        aria-valuenow="${probability}" aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <div class="alert alert-${isPredicted ? 'warning' : 'info'}">
+                                    ${isPredicted ? 
+                                        `<p><strong>高风险提示：</strong>根据您提供的数据，模型预测您有较高的${data.disease_type === 'stroke' ? '中风' : '心脏病'}风险。</p>
+                                        <p>建议您咨询专业医生进行进一步评估。</p>` : 
+                                        `<p><strong>低风险提示：</strong>根据您提供的数据，模型预测您目前的${data.disease_type === 'stroke' ? '中风' : '心脏病'}风险较低。</p>
+                                        <p>请继续保持健康的生活方式。</p>`
+                                    }
+                                </div>
+                                <div class="mt-4">
+                                    <h5>预防建议：</h5>
+                                    <ul>
+                                        <li>保持健康的饮食习惯，控制盐分和油脂摄入</li>
+                                        <li>适量运动，每周至少150分钟中等强度运动</li>
+                                        <li>避免吸烟，限制酒精摄入</li>
+                                        <li>定期体检，监测血压和血脂水平</li>
+                                        <li>保持良好的睡眠习惯和心理状态</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 如果使用了模拟数据，添加提示信息
+            if (data.note && data.note.includes('模拟数据')) {
+                html += `
+                    <div class="alert alert-info mt-3">
+                        <small><i class="fas fa-info-circle"></i> 注意：${data.note}。实际结果可能有所不同。</small>
+                    </div>
+                `;
+            }
+            
+            resultContent.innerHTML = html;
+        } else if (data.disease_type === 'cirrhosis') {
+            const stagePrediction = Math.round(data.prediction);
+            const stageDescriptions = {
+                1: '早期肝硬化，肝脏仍能正常运作',
+                2: '中度肝硬化，肝脏功能轻度受损',
+                3: '进展期肝硬化，肝脏功能中度受损',
+                4: '晚期肝硬化，肝脏功能严重受损'
+            };
+            
+            const stageColors = {
+                1: 'success',
+                2: 'info',
+                3: 'warning',
+                4: 'danger'
+            };
+            
+            let html = `
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card mb-4">
+                            <div class="card-header bg-${stageColors[stagePrediction]} text-${stagePrediction === 4 ? 'white' : 'dark'}">
+                                <h3 class="card-title mb-0">肝硬化分期预测结果</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center mb-4">
+                                    <div class="display-4">第 ${stagePrediction} 期</div>
+                                    <h4>${stageDescriptions[stagePrediction]}</h4>
+                                </div>
+                                <div class="progress mb-4">
+                                    <div class="progress-bar bg-${stageColors[stagePrediction]}" 
+                                        role="progressbar" style="width: ${stagePrediction * 25}%" 
+                                        aria-valuenow="${stagePrediction * 25}" aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <div class="alert alert-${stageColors[stagePrediction]}">
+                                    <p><strong>肝硬化分期评估：</strong> 根据您提供的数据，模型预测您的肝硬化处于第 ${stagePrediction} 期。</p>
+                                    <p>${stagePrediction <= 2 ? '早期发现很重要，建议定期随访并遵循医嘱。' : '请务必遵循专业医生的治疗建议，并定期检查肝功能。'}</p>
+                                </div>
+                                <div class="mt-4">
+                                    <h5>健康管理建议：</h5>
+                                    <ul>
+                                        <li>严格遵医嘱用药</li>
+                                        <li>保持健康饮食，限制盐分摄入</li>
+                                        <li>避免饮酒和其他肝毒性物质</li>
+                                        <li>定期监测肝功能</li>
+                                        <li>适当休息，避免过度劳累</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 如果使用了模拟数据，添加提示信息
+            if (data.note && data.note.includes('模拟数据')) {
+                html += `
+                    <div class="alert alert-info mt-3">
+                        <small><i class="fas fa-info-circle"></i> 注意：${data.note}。实际结果可能有所不同。</small>
+                    </div>
+                `;
+            }
+            
+            resultContent.innerHTML = html;
+        }
+        
+        // 显示结果容器并滚动到结果区域
+        resultContainer.style.display = 'block';
+        resultContainer.scrollIntoView({behavior: 'smooth'});
+    }
+    
+    // 初始化风险仪表盘
+    function initRiskGauges() {
+        document.querySelectorAll('.risk-gauge').forEach(gauge => {
+            const risk = parseFloat(gauge.dataset.risk);
+            const angle = (risk / 100) * 180 - 90;
+            
+            let color;
+            if (risk < 30) color = '#28a745'; // 绿色
+            else if (risk < 70) color = '#ffc107'; // 黄色
+            else color = '#dc3545'; // 红色
+            
+            gauge.style.background = `conic-gradient(
+                ${color} ${angle}deg,
+                #e0e0e0 ${angle}deg
+            )`;
+        });
+    }
+    
+    // 处理标签页切换事件 - 当切换标签页时，确保相应表单显示动画
+    document.querySelectorAll('[data-bs-toggle="pill"]').forEach(tabLink => {
+        tabLink.addEventListener('shown.bs.tab', function (e) {
+            const targetId = e.target.getAttribute('data-bs-target');
+            const targetPane = document.querySelector(targetId);
+            if (targetPane) {
+                targetPane.querySelectorAll('.fade-in-section').forEach(el => {
+                    el.classList.add('is-visible');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

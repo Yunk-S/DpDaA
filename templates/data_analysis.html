@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}数据分析 - 疾病预测与大数据分析系统{% endblock %}
+
+{% block meta_description %}对中风、心脏病和肝硬化数据进行预处理、统计分析和可视化，分析影响患病概率的因素。{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-5 animated-title white-heading">数据分析与可视化</h1>
+
+    <!-- 导航标签页 -->
+    <ul class="nav nav-tabs mb-4" id="diseaseTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="stroke-tab" data-bs-toggle="tab" data-bs-target="#stroke" type="button" role="tab">
+                <i class="fas fa-brain"></i> 中风数据分析
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="heart-tab" data-bs-toggle="tab" data-bs-target="#heart" type="button" role="tab">
+                <i class="fas fa-heartbeat"></i> 心脏病数据分析
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="cirrhosis-tab" data-bs-toggle="tab" data-bs-target="#cirrhosis" type="button" role="tab">
+                <i class="fas fa-notes-medical"></i> 肝硬化数据分析
+            </button>
+        </li>
+    </ul>
+
+    <!-- 标签内容 -->
+    <div class="tab-content" id="diseaseTabContent">
+        <!-- 中风数据分析 -->
+        <div class="tab-pane fade show active slide-section" id="stroke" role="tabpanel">
+            <!-- 中风数据内容 -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">特征相关性热图</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if 'stroke_correlation_matrix' in charts %}
+                                <img src="/figures/stroke_correlation_matrix.png" alt="中风数据相关性矩阵" class="img-fluid">
+                                <!-- 添加交互式版本链接 -->
+                                {% if 'stroke_correlation_matrix_interactive' in interactive_charts %}
+                                    <div class="mt-2">
+                                        <a href="/figures/stroke_correlation_matrix_interactive.html" target="_blank" class="btn btn-sm btn-primary">查看交互式版本</a>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> 相关性矩阵图尚未生成
+                                </div>
+                            {% endif %}
+                            <p class="mt-3">热图显示了各特征之间的相关性，颜色越深代表相关性越强。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">特征重要性</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if 'stroke_feature_importance' in charts %}
+                                <img src="/figures/stroke_feature_importance.png" alt="中风数据特征重要性" class="img-fluid">
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> 特征重要性图尚未生成
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">SHAP值分析</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if 'stroke_shap_importance' in charts %}
+                                <img src="/figures/stroke_shap_importance.png" alt="中风数据SHAP重要性" class="img-fluid">
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> SHAP分析图尚未生成
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 心脏病数据分析 -->
+        <div class="tab-pane fade slide-section" id="heart" role="tabpanel">
+            <!-- 心脏病数据内容 -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="card-title mb-0">特征相关性热图</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if 'heart_correlation_matrix' in charts %}
+                                <img src="/figures/heart_correlation_matrix.png" alt="心脏病数据相关性矩阵" class="img-fluid">
+                                <!-- 添加交互式版本链接 -->
+                                {% if 'heart_correlation_matrix_interactive' in interactive_charts %}
+                                    <div class="mt-2">
+                                        <a href="/figures/heart_correlation_matrix_interactive.html" target="_blank" class="btn btn-sm btn-primary">查看交互式版本</a>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> 相关性矩阵图尚未生成
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="card-title mb-0">特征重要性</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if 'heart_feature_importance' in charts %}
+                                <img src="/figures/heart_feature_importance.png" alt="心脏病数据特征重要性" class="img-fluid">
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> 特征重要性图尚未生成
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="card-title mb-0">SHAP值分析</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if 'heart_shap_importance' in charts %}
+                                <img src="/figures/heart_shap_importance.png" alt="心脏病数据SHAP重要性" class="img-fluid">
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> SHAP分析图尚未生成
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 肝硬化数据分析 -->
+        <div class="tab-pane fade slide-section" id="cirrhosis" role="tabpanel">
+            <!-- 肝硬化数据内容 -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="card-title mb-0">特征相关性热图</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if 'cirrhosis_correlation_matrix' in charts %}
+                                <img src="/figures/cirrhosis_correlation_matrix.png" alt="肝硬化数据相关性矩阵" class="img-fluid">
+                                <!-- 添加交互式版本链接 -->
+                                {% if 'cirrhosis_correlation_matrix_interactive' in interactive_charts %}
+                                    <div class="mt-2">
+                                        <a href="/figures/cirrhosis_correlation_matrix_interactive.html" target="_blank" class="btn btn-sm btn-primary">查看交互式版本</a>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> 相关性矩阵图尚未生成
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="card-title mb-0">特征重要性</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if 'cirrhosis_feature_importance' in charts %}
+                                <img src="/figures/cirrhosis_feature_importance.png" alt="肝硬化数据特征重要性" class="img-fluid">
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> 特征重要性图尚未生成
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="card-title mb-0">SHAP值分析</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            {% if 'cirrhosis_shap_importance' in charts %}
+                                <img src="/figures/cirrhosis_shap_importance.png" alt="肝硬化数据SHAP重要性" class="img-fluid">
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> SHAP分析图尚未生成
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化图表
+        // 已有的Chart.js代码保持不变
+    });
+</script>
+{% endblock %} 

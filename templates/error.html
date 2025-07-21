@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}{{ error_title }} - 疾病预测与大数据分析系统{% endblock %}
+
+{% block meta_description %}发生错误 - {{ error_title }}. {{ error_message }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .error-container {
+        text-align: center;
+        padding: 50px 15px;
+    }
+    
+    .error-code {
+        font-size: 6rem;
+        font-weight: bold;
+        margin-bottom: 0;
+        color: var(--primary);
+    }
+    
+    .error-title {
+        font-size: 2rem;
+        margin-bottom: 30px;
+    }
+    
+    .error-message {
+        font-size: 1.2rem;
+        margin-bottom: 40px;
+    }
+    
+    .error-icon {
+        font-size: 5rem;
+        margin-bottom: 20px;
+        color: var(--primary);
+    }
+    
+    .actions {
+        margin-top: 40px;
+    }
+    
+    .actions .btn {
+        margin: 0 10px;
+        min-width: 150px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 offset-md-1 col-lg-8 offset-lg-2">
+            <div class="content-block fade-in-section is-visible">
+                <div class="error-container">
+                    <div class="error-icon">
+                        {% if error_code == 404 %}
+                            <i class="fas fa-map-signs"></i>
+                        {% elif error_code == 500 %}
+                            <i class="fas fa-bug"></i>
+                        {% else %}
+                            <i class="fas fa-exclamation-circle"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <h1 class="error-code">{{ error_code }}</h1>
+                    <h2 class="error-title">{{ error_title }}</h2>
+                    <p class="error-message">{{ error_message }}</p>
+                    
+                    <div class="actions">
+                        <a href="/" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>返回首页
+                        </a>
+                        <button onclick="window.history.back()" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>返回上一页
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
