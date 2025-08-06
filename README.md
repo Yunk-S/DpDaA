@@ -1,9 +1,6 @@
 # 疾病预测与大数据分析系统
 
 基于机器学习和深度学习的中风、心脏病和肝硬化预测系统，提供数据分析、风险预测和健康管理建议。
-本项目仍在持续更新，项目基于2025年第十五届APMCM亚太地区大学生数学建模竞赛（中文赛项）B赛题所研究。因比赛训练数据限制，目前模型略有不足，还望见谅，仅作参考。
-
-> [English Version README](README_EN.md)
 
 ## 项目结构
 
@@ -19,6 +16,8 @@
 ├── chart_generator.py            # 图表生成工具
 ├── generate_metrics.py           # 模型指标生成工具
 ├── multi_disease_model.py        # 多疾病混合预测模型
+├── predict.py                    # 命令行模型预测模块
+├── predict_cmd.bat               # 交互式预测批处理文件
 ├── run.bat                       # 系统运行启动批处理文件
 ├── static/                       # 静态资源目录
 │   ├── style.css                 # 样式表
@@ -118,6 +117,43 @@ python main.py --all
 python main.py --webapp
 ```
 
+#### 方式三：使用命令行预测工具 注意！！先使用这个进行预测！！！
+
+1. 使用命令行工具直接预测：
+```
+python predict.py [disease_type] [param1=value1] [param2=value2] ...
+```
+
+例如，预测中风风险：
+```
+python predict.py stroke age=60 gender=Male hypertension=1 heart_disease=0 avg_glucose_level=120 bmi=28 smoking_status="formerly smoked"
+```
+
+2. 或者使用交互式批处理文件进行预测：
+```
+predict_cmd.bat
+```
+按提示选择疾病类型并输入相关健康指标。
+
+**参数说明：**
+- `disease_type`：疾病类型，可选值有 stroke(中风)、heart(心脏病)、cirrhosis(肝硬化)和multi(多疾病)
+- 后续参数为健康指标，格式为 参数名=参数值
+
+#### 交互式预测工具使用说明
+
+`predict_cmd.bat` 是一个交互式的命令行预测工具，提供英文界面进行疾病风险预测。使用步骤：
+
+1. 运行 `predict_cmd.bat` 文件
+2. 根据提示选择要预测的疾病类型（1-4之间的数字）
+   - 1: 中风预测 (Stroke prediction)
+   - 2: 心脏病预测 (Heart disease prediction)
+   - 3: 肝硬化预测 (Cirrhosis prediction)
+   - 4: 多疾病混合预测 (Multi-disease prediction)
+3. 根据提示逐步输入健康指标数据
+4. 系统将显示预测结果，包括风险概率和等级
+
+该工具特别适合在Web应用无法正常运行时使用，或者希望快速获取预测结果而无需启动完整Web界面的情况。
+
 ## Web应用使用说明 
 
 1. 运行Web应用后，系统将自动在浏览器中打开首页（http://localhost:5000）
@@ -125,7 +161,7 @@ python main.py --webapp
 3. 导航栏提供以下功能入口：
    - **数据分析**：查看三种疾病数据的分布、相关性和特征重要性
    - **模型性能**：查看各预测模型的性能指标和评估结果
-   - **疾病预测**：输入个人健康指标，获取疾病风险预测和健康建议
+   - **疾病预测**：输入个人健康指标，获取疾病风险预测和健康建议  （前后端连接bug，请使用predict_cmd.bat进行预测）
    - **多疾病关联**：查看三种疾病之间的关联性分析和综合风险评估
 
 ### 单一疾病预测功能
@@ -202,37 +238,44 @@ python main.py --webapp
    系统采用多任务学习框架，通过共享底层特征表示，同时学习多个相关任务（疾病预测）。
 
    数学表示：
-   - 共享特征提取层：$\mathbf{h} = f_{\text{shared}}(\mathbf{x}; \theta_s)$
-   - 任务特定输出层：$\hat{y}^{(k)} = f_{\text{task}_k}(\mathbf{h}; \theta_k)$
+   
+   共享特征提取层：
+   $$\mathbf{h} = f_{\text{shared}}(\mathbf{x}; \theta_s)$$
+   
+   任务特定输出层：
+   $$\hat{y}^{(k)} = f_{\text{task}_k}(\mathbf{h}; \theta_k)$$
 
 2. **联合概率计算**：
-   对于疾病A、B、C的独立概率分别为$P(A)$、$P(B)$、$P(C)$，系统计算以下联合概率：
-   - 单一疾病：$P(A)(1-P(B))(1-P(C))$
-   - 两种疾病：$P(A)P(B)(1-P(C))$
-   - 三种疾病：$P(A)P(B)P(C)$
-   - 无疾病：$(1-P(A))(1-P(B))(1-P(C))$
+   对于疾病A、B、C的独立概率分别为 $P(A)$、$P(B)$、$P(C)$，系统计算以下联合概率：
+   
+   - 单一疾病：$$P(A)(1-P(B))(1-P(C))$$
+   - 两种疾病：$$P(A)P(B)(1-P(C))$$
+   - 三种疾病：$$P(A)P(B)P(C)$$
+   - 无疾病：$$(1-P(A))(1-P(B))(1-P(C))$$
 
 3. **相关性调整**：
    系统使用相关系数调整联合概率，计算考虑相关性的联合概率：
    
-   $P(A,B) = P(A)P(B) + \text{corr}_{AB} \cdot \min(P(A), P(B)) \cdot (1 - \max(P(A), P(B)))$
+   $$P(A,B) = P(A)P(B) + \text{corr}_{AB} \cdot \min(P(A), P(B)) \cdot (1 - \max(P(A), P(B)))$$
    
-   其中$\text{corr}_{AB}$是疾病A和B之间的相关系数。
+   
+   其中 $\text{corr}_{AB}$ 是疾病A和B之间的相关系数。
 
 4. **注意力机制**：
    深度学习模型中使用注意力机制，增强模型对重要特征的关注：
    
-   $\alpha_i = \text{Attention}(h_i)$
-   $h'_i = h_i \cdot \alpha_i$
+   $$\alpha_i = \text{Attention}(h_i)$$
+   $$h'_i = h_i \cdot \alpha_i$$
    
-   其中$\alpha_i$是注意力权重，$h_i$是特征表示。
+   其中 $\alpha_i$ 是注意力权重，$h_i$ 是特征表示。
 
 ### 模型优化技术
 
 1. **知识蒸馏**：
    - 教师模型：复杂的深度神经网络或集成模型
    - 学生模型：轻量级模型，通过学习教师模型的"软标签"提高性能
-   - 蒸馏损失：$\mathcal{L}_{\text{distill}} = \alpha \cdot \mathcal{L}_{\text{CE}}(y, \hat{y}_{\text{student}}) + (1-\alpha) \cdot \mathcal{L}_{\text{KL}}(\hat{y}_{\text{teacher}}, \hat{y}_{\text{student}})$
+   - 蒸馏损失：
+   $$\mathcal{L}_{\text{distill}} = \alpha \cdot \mathcal{L}_{\text{CE}}(y, \hat{y}_{\text{student}}) + (1-\alpha) \cdot \mathcal{L}_{\text{KL}}(\hat{y}_{\text{teacher}}, \hat{y}_{\text{student}})$$
 
 2. **集成学习**：
    - 投票集成：多个基础模型通过投票或平均方式得到最终预测
@@ -242,7 +285,7 @@ python main.py --webapp
 3. **协同正则化**：
    鼓励不同任务的参数共享信息，促使模型学习疾病间的共病模式：
    
-   $\mathcal{L}_{\text{reg}} = \lambda \cdot \sum_{i,j} \| \theta_i - \theta_j \|_2^2$
+   $$\mathcal{L}_{\text{reg}} = \lambda \cdot \sum_{i,j} \| \theta_i - \theta_j \|_2^2$$
 
 ## 使用的数学知识和模型技术
 
@@ -413,8 +456,7 @@ python main.py --webapp
 4. templates目录（包含HTML模板）
 5. requirements.txt（依赖包列表）
 6. README.md（本说明文件）
-7. README_EN.md（英文版说明文件）
-8. run.bat批处理脚本
+7. run.bat批处理脚本
 
 ### 可排除的目录
 
@@ -425,62 +467,6 @@ python main.py --webapp
 4. catboost_info目录（CatBoost临时文件）
 5. app.log（应用日志文件）
 6. output目录（可在运行时自动生成）
-
-
-## 概率平滑处理功能
-
-为解决预测结果过于极端（0%或100%）的问题，我们实现了多种概率平滑处理策略：
-
-### 1. 模型校准方法的改进
-
-- 实现了多种校准方法(样条函数、Platt缩放、Beta分布)
-- 使用加权融合策略结合多种校准方法的优势
-- 针对不同风险等级采用不同校准参数
-
-### 2. 预测结果平滑处理
-
-- 添加了`smooth_probability`函数，提供多种平滑方法：
-  - `clip`: 简单截断法，确保概率在设定的最小值和最大值之间
-  - `beta`: Beta分布平滑，使用概率分布进行平滑
-  - `sigmoid_quantile`: Sigmoid函数和分位数结合的平滑方法（推荐）
-- 根据风险等级（低、中、高）调整平滑参数
-- 对回归预测结果，使用值域限制和平滑五分位分布
-
-### 3. 系统健壮性提升
-
-- 添加了多重回退策略，确保模型在各种情况下都能提供合理预测：
-  - 标准预测方法
-  - LightGBM raw_score模式
-  - 决策函数方法
-  - Booster直接访问
-  - 模型参数重建
-- 强化了错误处理机制，提供详细的错误信息和尝试的方法列表
-
-### 使用方法
-
-```python
-from model_utilities import smooth_probability
-
-# 平滑单个概率值
-smoothed_prob = smooth_probability(
-    prob=0.99,               # 原始概率
-    method='sigmoid_quantile', # 平滑方法
-    min_prob=0.05,           # 最小概率值
-    max_prob=0.95            # 最大概率值
-)
-
-# 平滑概率数组
-import numpy as np
-probs = np.array([0.01, 0.99, 0.5, 0])
-smoothed_probs = smooth_probability(
-    prob=probs,
-    method='beta',
-    min_prob=0.02,
-    max_prob=0.98
-)
-```
-
-这些改进解决了之前面临的预测模型输出极端值（0%或100%）的问题，现在系统会输出更加平滑、合理的概率分布，提高了预测结果的可靠性和实用性，更符合医学预测中固有的不确定性。
 
 ## 贡献者
 
