@@ -1,3 +1,13 @@
+<div align="center">
+
+**语言版本 / Language Version**
+
+[English](./README_EN.md) | **中文**
+
+</div>
+
+---
+
 # 疾病预测与大数据分析系统
 
 基于机器学习和深度学习的中风、心脏病和肝硬化预测系统，提供数据分析、风险预测和健康管理建议。
@@ -240,23 +250,44 @@ predict_cmd.bat
    数学表示：
    
    共享特征提取层：
-   $$\mathbf{h} = f_{\text{shared}}(\mathbf{x}; \theta_s)$$
+   ```math
+   \mathbf{h} = f_{\text{shared}}(\mathbf{x}; \theta_s)
+   ```
    
    任务特定输出层：
-   $$\hat{y}^{(k)} = f_{\text{task}_k}(\mathbf{h}; \theta_k)$$
+   ```math
+   \hat{y}^{(k)} = f_{\text{task}_k}(\mathbf{h}; \theta_k)
+   ```
 
 2. **联合概率计算**：
    对于疾病A、B、C的独立概率分别为 $P(A)$、$P(B)$、$P(C)$，系统计算以下联合概率：
    
-   - 单一疾病：$$P(A)(1-P(B))(1-P(C))$$
-   - 两种疾病：$$P(A)P(B)(1-P(C))$$
-   - 三种疾病：$$P(A)P(B)P(C)$$
-   - 无疾病：$$(1-P(A))(1-P(B))(1-P(C))$$
+   - 单一疾病：
+   ```math
+   P(A)(1-P(B))(1-P(C))
+   ```
+   
+   - 两种疾病：
+   ```math
+   P(A)P(B)(1-P(C))
+   ```
+   
+   - 三种疾病：
+   ```math
+   P(A)P(B)P(C)
+   ```
+   
+   - 无疾病：
+   ```math
+   (1-P(A))(1-P(B))(1-P(C))
+   ```
 
 3. **相关性调整**：
    系统使用相关系数调整联合概率，计算考虑相关性的联合概率：
    
-   $$P(A,B) = P(A)P(B) + \text{corr}_{AB} \cdot \min(P(A), P(B)) \cdot (1 - \max(P(A), P(B)))$$
+   ```math
+   P(A,B) = P(A)P(B) + \text{corr}_{AB} \cdot \min(P(A), P(B)) \cdot (1 - \max(P(A), P(B)))
+   ```
    
    
    其中 $\text{corr}_{AB}$ 是疾病A和B之间的相关系数。
@@ -264,8 +295,13 @@ predict_cmd.bat
 4. **注意力机制**：
    深度学习模型中使用注意力机制，增强模型对重要特征的关注：
    
-   $$\alpha_i = \text{Attention}(h_i)$$
-   $$h'_i = h_i \cdot \alpha_i$$
+   ```math
+   \alpha_i = \text{Attention}(h_i)
+   ```
+   
+   ```math
+   h'_i = h_i \cdot \alpha_i
+   ```
    
    其中 $\alpha_i$ 是注意力权重，$h_i$ 是特征表示。
 
@@ -275,7 +311,9 @@ predict_cmd.bat
    - 教师模型：复杂的深度神经网络或集成模型
    - 学生模型：轻量级模型，通过学习教师模型的"软标签"提高性能
    - 蒸馏损失：
-   $$\mathcal{L}_{\text{distill}} = \alpha \cdot \mathcal{L}_{\text{CE}}(y, \hat{y}_{\text{student}}) + (1-\alpha) \cdot \mathcal{L}_{\text{KL}}(\hat{y}_{\text{teacher}}, \hat{y}_{\text{student}})$$
+   ```math
+   \mathcal{L}_{\text{distill}} = \alpha \cdot \mathcal{L}_{\text{CE}}(y, \hat{y}_{\text{student}}) + (1-\alpha) \cdot \mathcal{L}_{\text{KL}}(\hat{y}_{\text{teacher}}, \hat{y}_{\text{student}})
+   ```
 
 2. **集成学习**：
    - 投票集成：多个基础模型通过投票或平均方式得到最终预测
@@ -285,7 +323,9 @@ predict_cmd.bat
 3. **协同正则化**：
    鼓励不同任务的参数共享信息，促使模型学习疾病间的共病模式：
    
-   $$\mathcal{L}_{\text{reg}} = \lambda \cdot \sum_{i,j} \| \theta_i - \theta_j \|_2^2$$
+   ```math
+   \mathcal{L}_{\text{reg}} = \lambda \cdot \sum_{i,j} \| \theta_i - \theta_j \|_2^2
+   ```
 
 ## 使用的数学知识和模型技术
 
@@ -431,7 +471,13 @@ predict_cmd.bat
 模型校准基于以下数学原理：
 
 1. **Platt Scaling**：使用逻辑回归将原始预测分数映射到校准概率
-   - 数学表达式：P(y=1|s) = σ(As + B)，其中s是原始分数，A和B是参数，σ是sigmoid函数
+   
+   数学表达式：
+   ```math
+   P(y=1|s) = \sigma(As + B)
+   ```
+   
+   其中 $s$ 是原始分数，$A$ 和 $B$ 是参数，$\sigma$ 是sigmoid函数
 
 2. **等渗回归**：使用分段常数函数进行非参数校准
    - 保持概率单调性，同时最小化均方误差
@@ -441,9 +487,20 @@ predict_cmd.bat
    - 对于高风险样本(p ≥ 0.3)：使用等渗回归或样条校准
 
 4. **分段样条校准**：
-   - 低概率区域(p < 0.2)：轻微提升 p' = p * 1.2
-   - 中等概率区域(0.2 ≤ p < 0.5)：中等提升 p' = 0.24 + (p - 0.2) * 1.5
-   - 高概率区域(p ≥ 0.5)：显著提升 p' = 0.69 + (p - 0.5) * 1.8
+   - 低概率区域 $(p < 0.2)$：
+   ```math
+   p' = p \times 1.2
+   ```
+   
+   - 中等概率区域 $(0.2 \leq p < 0.5)$：
+   ```math
+   p' = 0.24 + (p - 0.2) \times 1.5
+   ```
+   
+   - 高概率区域 $(p \geq 0.5)$：
+   ```math
+   p' = 0.69 + (p - 0.5) \times 1.8
+   ```
 
 ## 项目打包说明
 

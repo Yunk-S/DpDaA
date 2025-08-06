@@ -1,3 +1,13 @@
+<div align="center">
+
+**Language Version / 语言版本**
+
+**English** | [中文](./README.md)
+
+</div>
+
+---
+
 # Disease Prediction and Big Data Analysis System
 
 A machine learning and deep learning-based system for predicting stroke, heart disease, and cirrhosis, providing data analysis, risk prediction, and health management recommendations.
@@ -240,31 +250,57 @@ The multi-disease hybrid prediction model (`MultiDiseasePredictor` class) is one
    Mathematical representation:
    
    Shared feature extraction layer:
-   $$\mathbf{h} = f_{\text{shared}}(\mathbf{x}; \theta_s)$$
+   ```math
+   \mathbf{h} = f_{\text{shared}}(\mathbf{x}; \theta_s)
+   ```
    
    Task-specific output layer:
-   $$\hat{y}^{(k)} = f_{\text{task}_k}(\mathbf{h}; \theta_k)$$
+   ```math
+   \hat{y}^{(k)} = f_{\text{task}_k}(\mathbf{h}; \theta_k)
+   ```
 
 2. **Joint Probability Calculation**:
    For independent probabilities of diseases A, B, C as $P(A)$, $P(B)$, $P(C)$ respectively, the system calculates the following joint probabilities:
    
-   - Single disease: $$P(A)(1-P(B))(1-P(C))$$
-   - Two diseases: $$P(A)P(B)(1-P(C))$$
-   - Three diseases: $$P(A)P(B)P(C)$$
-   - No disease: $$(1-P(A))(1-P(B))(1-P(C))$$
+   - Single disease:
+   ```math
+   P(A)(1-P(B))(1-P(C))
+   ```
+   
+   - Two diseases:
+   ```math
+   P(A)P(B)(1-P(C))
+   ```
+   
+   - Three diseases:
+   ```math
+   P(A)P(B)P(C)
+   ```
+   
+   - No disease:
+   ```math
+   (1-P(A))(1-P(B))(1-P(C))
+   ```
 
 3. **Correlation Adjustment**:
    The system uses correlation coefficients to adjust joint probabilities, calculating correlation-adjusted joint probabilities:
    
-   $$P(A,B) = P(A)P(B) + \text{corr}_{AB} \cdot \min(P(A), P(B)) \cdot (1 - \max(P(A), P(B)))$$
+   ```math
+   P(A,B) = P(A)P(B) + \text{corr}_{AB} \cdot \min(P(A), P(B)) \cdot (1 - \max(P(A), P(B)))
+   ```
    
    Where $\text{corr}_{AB}$ is the correlation coefficient between diseases A and B.
 
 4. **Attention Mechanism**:
    Attention mechanisms are used in deep learning models to enhance the model's focus on important features:
    
-   $$\alpha_i = \text{Attention}(h_i)$$
-   $$h'_i = h_i \cdot \alpha_i$$
+   ```math
+   \alpha_i = \text{Attention}(h_i)
+   ```
+   
+   ```math
+   h'_i = h_i \cdot \alpha_i
+   ```
    
    Where $\alpha_i$ is the attention weight and $h_i$ is the feature representation.
 
@@ -273,8 +309,10 @@ The multi-disease hybrid prediction model (`MultiDiseasePredictor` class) is one
 1. **Knowledge Distillation**:
    - Teacher model: Complex deep neural networks or ensemble models
    - Student model: Lightweight models that improve performance by learning "soft labels" from teacher models
-   - Distillation loss: 
-   $$\mathcal{L}_{\text{distill}} = \alpha \cdot \mathcal{L}_{\text{CE}}(y, \hat{y}_{\text{student}}) + (1-\alpha) \cdot \mathcal{L}_{\text{KL}}(\hat{y}_{\text{teacher}}, \hat{y}_{\text{student}})$$
+   - Distillation loss:
+   ```math
+   \mathcal{L}_{\text{distill}} = \alpha \cdot \mathcal{L}_{\text{CE}}(y, \hat{y}_{\text{student}}) + (1-\alpha) \cdot \mathcal{L}_{\text{KL}}(\hat{y}_{\text{teacher}}, \hat{y}_{\text{student}})
+   ```
 
 2. **Ensemble Learning**:
    - Voting ensemble: Multiple base models obtain final predictions through voting or averaging
@@ -284,7 +322,9 @@ The multi-disease hybrid prediction model (`MultiDiseasePredictor` class) is one
 3. **Collaborative Regularization**:
    Encourage parameters of different tasks to share information, prompting the model to learn comorbidity patterns between diseases:
    
-   $$\mathcal{L}_{\text{reg}} = \lambda \cdot \sum_{i,j} \| \theta_i - \theta_j \|_2^2$$
+   ```math
+   \mathcal{L}_{\text{reg}} = \lambda \cdot \sum_{i,j} \| \theta_i - \theta_j \|_2^2
+   ```
 
 ## Mathematical Knowledge and Model Techniques Used
 
@@ -432,7 +472,9 @@ Model calibration is based on the following mathematical principles:
 1. **Platt Scaling**: Uses logistic regression to map original prediction scores to calibrated probabilities
    
    Mathematical expression:
-   $$P(y=1|s) = \sigma(As + B)$$
+   ```math
+   P(y=1|s) = \sigma(As + B)
+   ```
    
    Where $s$ is the original score, $A$ and $B$ are parameters, $\sigma$ is the sigmoid function
 
@@ -444,9 +486,20 @@ Model calibration is based on the following mathematical principles:
    - For high-risk samples $(p \geq 0.3)$: Use isotonic regression or spline calibration
 
 4. **Piecewise Spline Calibration**:
-   - Low probability region $(p < 0.2)$: Slight enhancement $p' = p \times 1.2$
-   - Medium probability region $(0.2 \leq p < 0.5)$: Medium enhancement $p' = 0.24 + (p - 0.2) \times 1.5$
-   - High probability region $(p \geq 0.5)$: Significant enhancement $p' = 0.69 + (p - 0.5) \times 1.8$
+   - Low probability region $(p < 0.2)$:
+   ```math
+   p' = p \times 1.2
+   ```
+   
+   - Medium probability region $(0.2 \leq p < 0.5)$:
+   ```math
+   p' = 0.24 + (p - 0.2) \times 1.5
+   ```
+   
+   - High probability region $(p \geq 0.5)$:
+   ```math
+   p' = 0.69 + (p - 0.5) \times 1.8
+   ```
 
 ## Project Packaging Instructions
 
