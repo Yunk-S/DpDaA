@@ -248,16 +248,12 @@ predict_cmd.bat
    系统采用多任务学习框架，通过共享底层特征表示，同时学习多个相关任务（疾病预测）。
 
    数学表示：
-   
+
    共享特征提取层：
-   ```math
-   \mathbf{h} = f_{\text{shared}}(\mathbf{x}; \theta_s)
-   ```
-   
+   $$\mathbf{h} = f_{\text{shared}}(\mathbf{x}; \theta_s)$$
+
    任务特定输出层：
-   ```math
-   \hat{y}^{(k)} = f_{\text{task}_k}(\mathbf{h}; \theta_k)
-   ```
+   $$\hat{y}^{(k)} = f_{\text{task}_k}(\mathbf{h}; \theta_k)$$
 
 2. **联合概率计算**：
    对于疾病A、B、C的独立概率分别为 $P(A)$、$P(B)$、$P(C)$，系统计算以下联合概率：
@@ -284,24 +280,17 @@ predict_cmd.bat
 
 3. **相关性调整**：
    系统使用相关系数调整联合概率，计算考虑相关性的联合概率：
-   
-   ```math
-   P(A,B) = P(A)P(B) + \text{corr}_{AB} \cdot \min(P(A), P(B)) \cdot (1 - \max(P(A), P(B)))
-   ```
+
+   $$P(A,B) = P(A)P(B) + \text{corr}_{AB} \cdot \min(P(A), P(B)) \cdot (1 - \max(P(A), P(B)))$$
    
    
    其中 $\text{corr}_{AB}$ 是疾病A和B之间的相关系数。
 
 4. **注意力机制**：
    深度学习模型中使用注意力机制，增强模型对重要特征的关注：
-   
-   ```math
-   \alpha_i = \text{Attention}(h_i)
-   ```
-   
-   ```math
-   h'_i = h_i \cdot \alpha_i
-   ```
+
+   $$\alpha_i = \text{Attention}(h_i)$$
+   $$h'_i = h_i \cdot \alpha_i$$
    
    其中 $\alpha_i$ 是注意力权重，$h_i$ 是特征表示。
 
@@ -471,11 +460,9 @@ predict_cmd.bat
 模型校准基于以下数学原理：
 
 1. **Platt Scaling**：使用逻辑回归将原始预测分数映射到校准概率
-   
+
    数学表达式：
-   ```math
-   P(y=1|s) = \sigma(As + B)
-   ```
+   $$P(y=1|s) = \sigma(As + B)$$
    
    其中 $s$ 是原始分数，$A$ 和 $B$ 是参数，$\sigma$ 是sigmoid函数
 
@@ -488,19 +475,13 @@ predict_cmd.bat
 
 4. **分段样条校准**：
    - 低概率区域 $(p < 0.2)$：
-   ```math
-   p' = p \times 1.2
-   ```
-   
+   $$p' = p \times 1.2$$
+
    - 中等概率区域 $(0.2 \leq p < 0.5)$：
-   ```math
-   p' = 0.24 + (p - 0.2) \times 1.5
-   ```
-   
+   $$p' = 0.24 + (p - 0.2) \times 1.5$$
+
    - 高概率区域 $(p \geq 0.5)$：
-   ```math
-   p' = 0.69 + (p - 0.5) \times 1.8
-   ```
+   $$p' = 0.69 + (p - 0.5) \times 1.8$$
 
 ## 项目打包说明
 
